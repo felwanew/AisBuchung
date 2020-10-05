@@ -13,9 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="bin\Debug\netcoreapp2.2\AisBuchung_Api.deps.json" />
-    <Content Include="bin\Debug\netcoreapp2.2\AisBuchung_Api.runtimeconfig.dev.json" />
-    <Content Include="bin\Debug\netcoreapp2.2\AisBuchung_Api.runtimeconfig.json" />
     <Content Include="obj\AisBuchung_Api.csproj.nuget.dgspec.json" />
   </ItemGroup>
 
@@ -37,9 +34,6 @@
 
 
   <ItemGroup>
-    <None Include="bin\Debug\netcoreapp2.2\AisBuchung_Api.dll" />
-    <None Include="bin\Debug\netcoreapp2.2\AisBuchung_Api.pdb" />
-    <None Include="bin\Debug\netcoreapp2.2\JsonSerializer.dll" />
     <None Include="obj\AisBuchung_Api.csproj.nuget.cache" />
     <None Include="obj\AisBuchung_Api.csproj.nuget.g.props" />
     <None Include="obj\AisBuchung_Api.csproj.nuget.g.targets" />
@@ -48,6 +42,11 @@
     <None Include="obj\Debug\netcoreapp2.2\AisBuchung_Api.csproj.FileListAbsolute.txt" />
     <None Include="obj\Debug\netcoreapp2.2\AisBuchung_Api.csprojAssemblyReference.cache" />
     <None Include="obj\Release\netcoreapp2.2\AisBuchung_Api.AssemblyInfoInputs.cache" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Folder Include="bin\Debug\netcoreapp2.2\" />
   </ItemGroup>
 
 

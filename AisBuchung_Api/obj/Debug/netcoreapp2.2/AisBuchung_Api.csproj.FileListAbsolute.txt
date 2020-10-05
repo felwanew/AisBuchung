@@ -3,3 +3,9 @@ C:\Users\wanwitfe\Source\Repos\AisBuchung\AisBuchung_Api\obj\Debug\netcoreapp2.2
 C:\Users\wanwitfe\Source\Repos\AisBuchung\AisBuchung_Api\obj\Debug\netcoreapp2.2\AisBuchung_Api.csproj.CoreCompileInputs.cache
 C:\Users\wanwitfe\Source\Repos\AisBuchung\AisBuchung_Api\obj\Debug\netcoreapp2.2\AisBuchung_Api.RazorAssemblyInfo.cache
 C:\Users\wanwitfe\Source\Repos\AisBuchung\AisBuchung_Api\obj\Debug\netcoreapp2.2\AisBuchung_Api.RazorAssemblyInfo.cs
+C:\Users\wanwitfe\Source\Repos\AisBuchungen\AisBuchung_Api\obj\Debug\netcoreapp2.2\AisBuchung_Api.csprojAssemblyReference.cache
+C:\Users\wanwitfe\Source\Repos\AisBuchungen\AisBuchung_Api\obj\Debug\netcoreapp2.2\AisBuchung_Api.AssemblyInfoInputs.cache
+C:\Users\wanwitfe\Source\Repos\AisBuchungen\AisBuchung_Api\obj\Debug\netcoreapp2.2\AisBuchung_Api.AssemblyInfo.cs
+C:\Users\wanwitfe\Source\Repos\AisBuchungen\AisBuchung_Api\obj\Debug\netcoreapp2.2\AisBuchung_Api.csproj.CoreCompileInputs.cache
+C:\Users\wanwitfe\Source\Repos\AisBuchungen\AisBuchung_Api\obj\Debug\netcoreapp2.2\AisBuchung_Api.RazorAssemblyInfo.cache
+C:\Users\wanwitfe\Source\Repos\AisBuchungen\AisBuchung_Api\obj\Debug\netcoreapp2.2\AisBuchung_Api.RazorAssemblyInfo.cs
