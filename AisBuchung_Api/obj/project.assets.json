@@ -12445,11 +12445,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\wanwitfe\\source\\repos\\AisBuchungApi-master\\AisBuchungApi-master\\AisBuchung_Api\\AisBuchung_Api\\AisBuchung_Api.csproj",
+      "projectUniqueName": "C:\\Users\\wanwitfe\\source\\repos\\AisBuchung\\AisBuchung_Api\\AisBuchung_Api.csproj",
       "projectName": "AisBuchung_Api",
-      "projectPath": "C:\\Users\\wanwitfe\\source\\repos\\AisBuchungApi-master\\AisBuchungApi-master\\AisBuchung_Api\\AisBuchung_Api\\AisBuchung_Api.csproj",
+      "projectPath": "C:\\Users\\wanwitfe\\source\\repos\\AisBuchung\\AisBuchung_Api\\AisBuchung_Api.csproj",
       "packagesPath": "C:\\Users\\wanwitfe\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\wanwitfe\\source\\repos\\AisBuchungApi-master\\AisBuchungApi-master\\AisBuchung_Api\\AisBuchung_Api\\obj\\",
+      "outputPath": "C:\\Users\\wanwitfe\\source\\repos\\AisBuchung\\AisBuchung_Api\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Microsoft\\Xamarin\\NuGet\\"

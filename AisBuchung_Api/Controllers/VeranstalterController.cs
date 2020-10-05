@@ -15,16 +15,22 @@ namespace AisBuchung_Api.Controllers
     public class VeranstalterController : ControllerBase
     {
         private readonly VeranstalterModel model;
+        private readonly AuthModel auth;
 
         public VeranstalterController()
         {
-
             model = new VeranstalterModel();
+            auth = new AuthModel();
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<string>> GetAllOrganizers()
+        public ActionResult<IEnumerable<string>> GetAllOrganizers(LoginPost loginPost)
         {
+            if (!auth.CheckIfOrganizerPermissions(loginPost))
+            {
+                return Unauthorized();
+            }
+
             var query = Request.QueryString.ToUriComponent();
             query = System.Web.HttpUtility.UrlDecode(query);
             var result = model.GetOrganizers(query);
@@ -32,13 +38,35 @@ namespace AisBuchung_Api.Controllers
         }
 
         [HttpGet("{id}")]
-        public ActionResult<IEnumerable<string>> GetAllOrganizers(long id)
+        public ActionResult<IEnumerable<string>> GetOrganizer(LoginPost loginPost, long id)
         {
+            if (!auth.CheckIfOrganizerPermissions(loginPost))
+            {
+                return Unauthorized();
+            }
+
             var result = model.GetOrganizer(id);
             if (result == null)
             {
                 return NotFound();
             }
+            return Content(result, "application/json");
+        }
+
+        [HttpGet("{id}/kalender")]
+        public ActionResult<IEnumerable<string>> GetOrganizerCalendars(LoginPost loginPost, long id)
+        {
+            if (!auth.CheckIfOrganizerPermissions(loginPost))
+            {
+                return Unauthorized();
+            }
+
+            var result = model.GetOrganizerCalendars(id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+
             return Content(result, "application/json");
         }
 
@@ -48,8 +76,7 @@ namespace AisBuchung_Api.Controllers
             var result = model.PostOrganizer(organizerPost);
             if (result > 0)
             {
-                var path = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}/veranstalter/{result}";
-                return Created(path, null);
+                return Ok();
             }
             else
             {
@@ -60,15 +87,60 @@ namespace AisBuchung_Api.Controllers
         [HttpPut("{id}")]
         public ActionResult<IEnumerable<string>> PutOrganizer(long id, OrganizerPost organizerPost)
         {
+            //TODO OrganizerPost überprüfen
+            if (!auth.CheckIfOrganizerPermissions(organizerPost, id))
+            {
+                return Unauthorized();
+            }
+
             var result = model.PutOrganizer(id, organizerPost);
             if (result)
             {
-                var path = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}/veranstalter/{result}";
-                return Created(path, null);
+                //var path = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}/veranstalter/{result}";
+                return NoContent();
             }
             else
             {
-                return Conflict();
+                return NotFound();
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public ActionResult<IEnumerable<string>> DeleteOrganizer(LoginPost loginPost, long id)
+        {
+            if (!auth.CheckIfOrganizerPermissions(loginPost, id))
+            {
+                return Unauthorized();
+            }
+
+            var result = model.DeleteOrganizer(id);
+            if (result)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost("{id}/autorisieren")]
+        public ActionResult<IEnumerable<string>> AuthorizeOrganizer(LoginPost loginPost, long id)
+        {
+            if (!auth.CheckIfOrganizerPermissions(loginPost))
+            {
+                return Unauthorized();
+            }
+
+            var result = model.AuthorizeOrganizer(id);
+
+            if (result)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return NotFound();
             }
         }
     }

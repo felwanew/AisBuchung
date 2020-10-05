@@ -5,6 +5,20 @@
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="obj\Debug\netcoreapp2.2\.NETCoreApp,Version=v2.2.AssemblyAttributes.cs" />
+    <Compile Include="obj\Debug\netcoreapp2.2\AisBuchung_Api.AssemblyInfo.cs" />
+    <Compile Include="obj\Release\netcoreapp2.2\.NETCoreApp,Version=v2.2.AssemblyAttributes.cs" />
+    <Compile Include="obj\Release\netcoreapp2.2\AisBuchung_Api.AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="bin\Debug\netcoreapp2.2\AisBuchung_Api.deps.json" />
+    <Content Include="bin\Debug\netcoreapp2.2\AisBuchung_Api.runtimeconfig.dev.json" />
+    <Content Include="bin\Debug\netcoreapp2.2\AisBuchung_Api.runtimeconfig.json" />
+    <Content Include="obj\AisBuchung_Api.csproj.nuget.dgspec.json" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Ical.Net" Version="4.1.11" />
@@ -19,6 +33,21 @@
     <Reference Include="JsonSerializer">
       <HintPath>..\..\..\..\JsonSerializer\JsonSerializer\bin\Debug\netstandard2.0\JsonSerializer.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include="bin\Debug\netcoreapp2.2\AisBuchung_Api.dll" />
+    <None Include="bin\Debug\netcoreapp2.2\AisBuchung_Api.pdb" />
+    <None Include="bin\Debug\netcoreapp2.2\JsonSerializer.dll" />
+    <None Include="obj\AisBuchung_Api.csproj.nuget.cache" />
+    <None Include="obj\AisBuchung_Api.csproj.nuget.g.props" />
+    <None Include="obj\AisBuchung_Api.csproj.nuget.g.targets" />
+    <None Include="obj\Debug\netcoreapp2.2\AisBuchung_Api.AssemblyInfoInputs.cache" />
+    <None Include="obj\Debug\netcoreapp2.2\AisBuchung_Api.assets.cache" />
+    <None Include="obj\Debug\netcoreapp2.2\AisBuchung_Api.csproj.FileListAbsolute.txt" />
+    <None Include="obj\Debug\netcoreapp2.2\AisBuchung_Api.csprojAssemblyReference.cache" />
+    <None Include="obj\Release\netcoreapp2.2\AisBuchung_Api.AssemblyInfoInputs.cache" />
   </ItemGroup>
 
 

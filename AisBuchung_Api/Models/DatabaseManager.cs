@@ -30,13 +30,14 @@ namespace AisBuchung_Api.Models
             var createCommands = new string[]
             {
                 $"CREATE TABLE Admins (Id INTEGER PRIMARY KEY)",
-                $"CREATE TABLE Buchungen (Id INTEGER PRIMARY KEY AUTOINCREMENT, Veranstaltung TEXT NOT NULL, Nutzer INTEGER NOT NULL, Buchungstyp INTEGER NOT NULL, Verifiziert INTEGER NOT NULL, Verarbeitung INTEGER NOT NULL, Zeitstempel INTEGER NOT NULL)",
+                $"CREATE TABLE Buchungen (Id INTEGER PRIMARY KEY AUTOINCREMENT, Veranstaltung TEXT NOT NULL, Nutzer INTEGER NOT NULL, Buchungstyp INTEGER NOT NULL, Zeitstempel INTEGER NOT NULL)",
+                $"CREATE TABLE Emailverifizierungen (Id INTEGER PRIMARY KEY AUTOINCREMENT, Code TEXT NOT NULL, Nutzer INTEGER NOT NULL, Zeitfrist INTEGER NOT NULL)",
                 $"CREATE TABLE Kalender (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT NOT NULL)",
                 $"CREATE TABLE Kalenderberechtigte (Id INTEGER PRIMARY KEY AUTOINCREMENT, Kalender INTEGER NOT NULL, Veranstalter INTEGER NOT NULL)",
-                $"CREATE TABLE Nutzerdaten (Id INTEGER PRIMARY KEY AUTOINCREMENT, Nachname TEXT NOT NULL, Vorname TEXT NOT NULL, Email TEXT NOT NULL, Abteilung INTEGER NOT NULL)",
-                $"CREATE TABLE Teilnehmer (Id INTEGER PRIMARY KEY AUTOINCREMENT, Veranstaltung TEXT NOT NULL, Nutzer INTEGER NOT NULL)",
-                $"CREATE TABLE Veranstalter (Id INTEGER PRIMARY KEY AUTOINCREMENT, Passwort TEXT NOT NULL)",
-                $"CREATE TABLE Veranstaltung (Id TEXT PRIMARY KEY, Teilnahmelimit INTEGER NOT NULL, Anmeldefrist INTEGER NOT NULL, Anmeldetyp INTEGER NOT NULL, Abmeldetyp INTEGER NOT NULL)",
+                $"CREATE TABLE Nutzerdaten (Id INTEGER PRIMARY KEY AUTOINCREMENT, Nachname TEXT NOT NULL, Vorname TEXT NOT NULL, Email TEXT NOT NULL, Abteilung INTEGER NOT NULL, Verifiziert INTEGER NOT NULL)",
+                $"CREATE TABLE Teilnehmer (Id INTEGER PRIMARY KEY AUTOINCREMENT, Veranstaltung INTEGER NOT NULL, Nutzer INTEGER NOT NULL)",
+                $"CREATE TABLE Veranstalter (Id INTEGER PRIMARY KEY, Passwort TEXT NOT NULL, Autorisiert INTEGER NOT NULL)",
+                $"CREATE TABLE Veranstaltungen (Id INTEGER PRIMARY KEY AUTOINCREMENT, Uid TEXT NOT NULL, Anmeldefrist INTEGER NOT NULL, Teilnehmerlimit INTEGER NOT NULL, Teilnehmerzahl INTEGER NOT NULL)",
             };
 
             ExecuteNonQuery(createCommands);
@@ -56,7 +57,6 @@ namespace AisBuchung_Api.Models
             var c = connection.CreateCommand();
             c.CommandText = command;
             var r = c.ExecuteReader();
-            //r.Read();
             return r;
         }
 
@@ -78,6 +78,21 @@ namespace AisBuchung_Api.Models
             }
         }
 
+        public static void ExecuteNonQuery(string command)
+        {
+            if (!File.Exists(Path))
+            {
+                CreateNewDatabase(false);
+            }
+
+            var connectionBuilder = new SqliteConnectionStringBuilder { DataSource = Path };
+            var connection = new SqliteConnection(connectionBuilder.ConnectionString);
+            connection.Open();
+            var c = connection.CreateCommand();
+            c.CommandText = command;
+            c.ExecuteNonQuery();
+        }
+
         public static int CountResults(string command)
         {
             var r = ExecuteReader(command);
@@ -91,6 +106,132 @@ namespace AisBuchung_Api.Models
             }
 
             return result;
+        }
+
+        public static string ExecuteGet(string table, string uid, Dictionary<string, string> keyTableDictionary)
+        {
+            var select = $"SELECT * FROM {table} WHERE Uid=\"{uid}\"";
+            var reader = ExecuteReader(select);
+            return ReadFirstAsJsonObject(keyTableDictionary, reader, null);
+        }
+
+        public static string ExecuteGet(string table, long id, Dictionary<string, string> keyTableDictionary)
+        {
+            var select = $"SELECT * FROM {table} WHERE Id={id}";
+            var reader = ExecuteReader(select);
+            return ReadFirstAsJsonObject(keyTableDictionary, reader, null);
+        }
+
+        public static string ExecuteGet(string table, long[] ids, Dictionary<string, string> keyTableDictionary)
+        {
+            if (ids == null)
+            {
+                return null;
+            }
+
+            if (ids.Length == 0)
+            {
+                return "[]";
+            }
+
+            var expressions = new List<string>();
+            foreach (var id in ids)
+            {
+                expressions.Add($"Id = {id}");
+            }
+
+            var where = String.Join(" OR ", expressions);
+
+            var select = $"SELECT * FROM {table} WHERE {where}";
+            var reader = ExecuteReader(select);
+            return ReadAsJsonArray(keyTableDictionary, reader);
+        }
+
+        public static string GetId(string queryCommand)
+        {
+            var id = DatabaseManager.ReadFirstAsJsonObject(new Dictionary<string, string> { { "id", "Id" } }, DatabaseManager.ExecuteReader(queryCommand), null);
+            return Json.GetKvpValue(id, "id", false);
+        }
+
+        public static bool ExecuteDelete(string table, long id)
+        {
+            var select = $"SELECT * FROM {table} WHERE Id={id}";
+            if (CountResults(select) > 0)
+            {
+                var delete = $"DELETE FROM {table} WHERE Id={id}";
+                ExecuteNonQuery(delete);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static bool ExecuteDelete(string table, long[] ids)
+        {
+            if (table == null || ids == null)
+            {
+                return false;
+            }
+
+            if (ids.Length == 0)
+            {
+                return true;
+            }
+
+            var expressions = new List<string>();
+            foreach(var id in ids)
+            {
+                expressions.Add($"Id = {id}");
+            }
+
+            var where = String.Join(" OR ", expressions);
+
+            var select = $"SELECT * FROM {table} WHERE {where}";
+            if (CountResults(select) > 0)
+            {
+                var delete = $"DELETE FROM {table} WHERE {where}";
+                ExecuteNonQuery(delete);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static bool ExecuteDelete(string table, string column, string[] values)
+        {
+            if (table == null || column == null || values == null)
+            {
+                return false;
+            }
+
+            if (values.Length == 0)
+            {
+                return true;
+            }
+
+            var expressions = new List<string>();
+            foreach (var v in values)
+            {
+                expressions.Add($"{column} = {v}");
+            }
+
+            var where = String.Join(" OR ", expressions);
+
+            var select = $"SELECT * FROM {table} WHERE {where}";
+            if (CountResults(select) > 0)
+            {
+                var delete = $"DELETE FROM {table} WHERE {where}";
+                ExecuteNonQuery(delete);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public static long ExecutePost(string table, Dictionary<string, string> keyValuePairs)
@@ -129,11 +270,6 @@ namespace AisBuchung_Api.Models
             {
                 if (kvp.Value == null)
                 {
-                    /*
-                    var p = new SqliteParameter($"@{kvp.Key}", GetMax(table, kvp.Key) + 1);
-                    p.SqliteType = SqliteType.Integer;
-                    c.Parameters.Add(p);
-                    */
                     c.Parameters.Add(new SqliteParameter($"@{kvp.Key}", DBNull.Value));
                 }
                 else
@@ -227,6 +363,12 @@ namespace AisBuchung_Api.Models
                 connection.Close();
                 return 0;
             }
+        }
+
+        public static string ReadAsJsonArray(Dictionary<string, string> keyTableDictionary, SqliteDataReader reader, string arrayKey)
+        {
+            var result = ReadAsJsonArray(keyTableDictionary, reader);
+            return Json.SerializeObject(new Dictionary<string, string> { { arrayKey, result } });
         }
 
         public static string ReadAsJsonArray(Dictionary<string, string> keyTableDictionary, SqliteDataReader reader)

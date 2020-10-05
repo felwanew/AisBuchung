@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "w8Z3hyZbapMrYkFamvKcCweALWWMKPptK1ueCCfDjfbSH+/GWFx0IkeWev++AVFdqw/KlgTia50yHtr8gJgMEQ==",
+  "dgSpecHash": "EyikaWzrUMC/WdHzGWoGwnyFYP7Dd8VJfoROUmumZk6J5TVKGLxUNBVR21oKwlnvk0+avWlZbDakTw5qARrH6Q==",
   "success": true,
-  "projectFilePath": "C:\\Users\\wanwitfe\\source\\repos\\AisBuchungApi-master\\AisBuchungApi-master\\AisBuchung_Api\\AisBuchung_Api\\AisBuchung_Api.csproj",
+  "projectFilePath": "C:\\Users\\wanwitfe\\Source\\Repos\\AisBuchung\\AisBuchung_Api\\AisBuchung_Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\wanwitfe\\.nuget\\packages\\ical.net\\4.1.11\\ical.net.4.1.11.nupkg.sha512",
     "C:\\Users\\wanwitfe\\.nuget\\packages\\microsoft.aspnet.webapi.client\\5.2.6\\microsoft.aspnet.webapi.client.5.2.6.nupkg.sha512",

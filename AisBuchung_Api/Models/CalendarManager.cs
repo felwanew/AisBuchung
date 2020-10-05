@@ -14,15 +14,14 @@ namespace AisBuchung_Api.Models
 {
     public static class CalendarManager
     {
-        public static string AddEvent(long organizerId, EventPost eventPost, string calendar)
+        public static string AddEvent(EventPost eventPost, string calendar)
         {
-            var cc = GetCalendarCollection();
-            var c = GetCalendar(calendar, cc);
-            var result = AddEvent(organizerId, eventPost, c);
+            var c = GetCalendar();
+            var result = AddEvent(c, Convert.ToInt64(calendar), eventPost);
             if (result != null)
             {
-                SaveCalendars(cc);
-                return result;
+                SaveCalendar(c);
+                return result.Uid;
             }
             else
             {
@@ -30,22 +29,36 @@ namespace AisBuchung_Api.Models
             }
         }
 
-        public static string AddEvent(long organizerId, EventPost eventPost, Calendar calendar)
+        public static CalendarEvent AddEvent(Calendar calendar, long calendarId, EventPost eventPost)
         {
+            var c = calendar;
             var e = new CalendarEvent();
-            if (EditEvent(organizerId, eventPost, e))
-            {
-                calendar.Events.Add(e);
-                return e.Uid;
-            }
+            
+            e.Uid = GenerateUniqueId(calendar);
 
-            return null;
+            EditEvent(eventPost.kalender, eventPost, e);
+
+            c.Events.Add(e);
+            return e;
+        }
+
+        public static string GenerateUniqueId(Calendar calendar)
+        {
+            while (true)
+            {
+                var uid = Guid.NewGuid().ToString().Substring(0, 8);
+
+                if (CheckIfUidIsUnique(calendar, uid))
+                {
+                    return uid;
+                }
+            }
         }
 
         public static bool EditEvent(long organizerId, EventPost eventPost, string uid)
         {
-            var cc = GetCalendarCollection();
-            var e = GetEvent(uid, cc);
+            var c = GetCalendar();
+            var e = GetEvent(uid, c);
             if (e == null)
             {
                 return false;
@@ -53,87 +66,115 @@ namespace AisBuchung_Api.Models
 
             if (EditEvent(organizerId, eventPost, e))
             {
-                SaveCalendars(cc);
+                SaveCalendar(c);
                 return true;
             }
 
             return false;
         }
 
-        public static bool EditEvent(long organizerId, EventPost eventPost, CalendarEvent calenderEvent)
+        public static bool EditEvent(long calendarId, EventPost eventPost, CalendarEvent calenderEvent)
         {
             var e = calenderEvent;
             var ep = eventPost;
 
-            e.Organizer.CommonName = organizerId.ToString();
-            
+            e.Organizer = new Organizer();
+            e.Organizer.CommonName = calendarId.ToString();
             e.Summary = ep.name;
             e.Description = ep.beschreibung;
-            e.DtStart.Value = GetDateTime(eventPost.datum, eventPost.startzeit);
-            e.DtEnd.Value = GetDateTime(eventPost.datum, eventPost.endzeit);
             e.Location = ep.ort;
-            e.DtStamp.Value = DateTime.Now;
+            e.DtStart = new CalDateTime(GetDateTime(eventPost.datum.PadLeft(8, '0'), eventPost.startzeit.PadLeft(4, '0')), "Europe/Berlin");
+            e.DtEnd = new CalDateTime(GetDateTime(eventPost.datum.PadLeft(8, '0'), eventPost.endzeit.PadLeft(4, '0')), "Europe/Berlin");
+            e.DtStamp = new CalDateTime(DateTime.Now, "Europe/Berlin");
 
             return true;
         }
 
-        public static Calendar AddNewCalendar(string calendarName)
+        public static bool CheckIfUidIsUnique(Calendar calendar, string uid)
         {
-            var cc = GetCalendarCollection();
-            var result = AddNewCalendar(calendarName, cc);
-            if (result != null)
+            foreach (var e in calendar.Events)
             {
-                SaveCalendars(cc);
-                return result;
+                if (e.Uid == uid)
+                {
+                    return false;
+                }
             }
-            else
-            {
-                return null;
-            }
-            
+
+            return true;
         }
 
-        public static Calendar AddNewCalendar(string calendarName, CalendarCollection calendars)
-        {
-            var c = GetCalendar(calendarName, calendars);
-            if (c != null)
-            {
-                return null;
-            }
-
-            var result = new Calendar();
-            result.Name = calendarName;
-            calendars.Add(result);
-            return result;
-        }
-
-        public static CalendarCollection GetCalendarCollection()
+        public static Calendar GetCalendar()
         {
             if (File.Exists(Path))
             {
-                return CalendarCollection.Load(File.ReadAllText(Path));
+                return Calendar.Load(File.ReadAllText(Path));
             }
             else
             {
-                return CreateCalendarCollection();
+                return CreateCalendar();
             }
-            
         }
 
-        public static CalendarCollection CreateCalendarCollection()
+        public static string GetOrganizerCommonName(string eventUid)
         {
-            return new CalendarCollection();
+            var c = GetCalendar();
+            var e = c.Events[eventUid];
+            var o = e.Organizer;
+            return o.CommonName;
+        }
+
+        public static Calendar CreateCalendar()
+        {
+            return new Calendar();
+        }
+
+        public static string ReadEventsAsJsonArray()
+        {
+            return ReadEventsAsJsonArray(GetCalendar());
         }
 
         public static string ReadEventsAsJsonArray(Calendar calendar)
         {
+            if (calendar == null)
+            {
+                return null;
+            }
+
+            return ReadEventsAsJsonArray(calendar.Events.ToList());
+        }
+
+        public static string ReadEventsAsJsonArray(List<CalendarEvent> calendarEvents)
+        {
+            if (calendarEvents == null)
+            {
+                return null;
+            }
+
             var result = new List<string>();
-            foreach (var e in calendar.Events)
+            foreach (var e in calendarEvents)
             {
                 result.Add(ReadEventAsJsonObject(e));
             }
 
             return Json.SerializeArray(result.ToArray());
+        }
+
+        public static string ReadEventsAsJsonArray(Calendar calendar, long calendarId)
+        {
+            var l = new List<CalendarEvent>();
+            var es = calendar.Events;
+            foreach(var e in es)
+            {
+                if (calendarId > -1)
+                {
+                    if (e.Organizer.CommonName == calendarId.ToString())
+                    {
+                        l.Add(e);
+                    }
+                }
+            }
+
+            return ReadEventsAsJsonArray(l);
         }
 
         public static string ReadEventAsJsonObject(Calendar calendar, string uid)
@@ -167,7 +208,7 @@ namespace AisBuchung_Api.Models
         {
             var e = calendarEvent;
             var o = new Dictionary<string, string>();
-            Json.AddKeyValuePair(o, "id", e.Uid, true);
+            Json.AddKeyValuePair(o, "uid", e.Uid, true);
             Json.AddKeyValuePair(o, "name", e.Summary, true);
             Json.AddKeyValuePair(o, "beschreibung", e.Description, true);
             Json.AddKeyValuePair(o, "ort", e.Location, true);
@@ -182,12 +223,14 @@ namespace AisBuchung_Api.Models
 
         public static string GetDayTime(CalDateTime dateTime)
         {
-            return $"{dateTime.Hour.ToString().PadLeft(2)}{dateTime.Minute.ToString().PadLeft(2)}";
+            var result = $"{dateTime.Hour.ToString().PadLeft(2, '0')}{dateTime.Minute.ToString().PadLeft(2, '0')}";
+            return Convert.ToInt64(result).ToString();
         }
 
         public static string GetDate(CalDateTime dateTime)
         {
-            return $"{dateTime.Year.ToString().PadLeft(4)}{dateTime.Month.ToString().PadLeft(2)}{dateTime.Day.ToString().PadLeft(2)}";
+            var result = $"{dateTime.Year.ToString().PadLeft(4, '0')}{dateTime.Month.ToString().PadLeft(2, '0')}{dateTime.Day.ToString().PadLeft(2, '0')}";
+            return Convert.ToInt64(result).ToString();
         }
 
         public static DateTime GetDateTime(string date, string time)
@@ -197,21 +240,30 @@ namespace AisBuchung_Api.Models
             var D = Convert.ToInt32(date.Substring(6, 2));
             var h = Convert.ToInt32(time.Substring(0, 2));
             var m = Convert.ToInt32(time.Substring(2, 2));
-            return new DateTime(Y, M, D, h, m, 0);
+            var result = new DateTime(Y, M, D, h, m, 0);
+
+            return result;
         }
 
-        public static CalendarEvent GetEvent(string uid, CalendarCollection calendars)
+        public static string GetDateTime(DateTime dateTime)
         {
-            foreach(var c in calendars)
-            {
-                var e = GetEvent(uid, c);
-                if (e != null)
-                {
-                    return e;
-                }
-            }
+            return $"{dateTime.Year.ToString().PadLeft(4, '0')}{dateTime.Month.ToString().PadLeft(2, '0')}{dateTime.Day.ToString().PadLeft(2, '0')}" +
+                $"{dateTime.Hour.ToString().PadLeft(2, '0')}{dateTime.Minute.ToString().PadLeft(2, '0')}";
+        }
 
-            return null;
+        public static DateTime GetDateTime(string dateTime)
+        {
+            return GetDateTime(dateTime.Substring(0, 8), dateTime.Substring(8, 4));
+        }
+
+        public static CalendarEvent GetEvent(string uid)
+        {
+            return GetEvent(uid, GetCalendar());
+        }
+
+        public static string GetEventAsJsonObject(string uid)
+        {
+            return ReadEventAsJsonObject(GetEvent(uid, GetCalendar()));
         }
 
         public static CalendarEvent GetEvent(string uid, Calendar calendar)
@@ -227,32 +279,84 @@ namespace AisBuchung_Api.Models
             return null;
         }
 
-        public static Calendar GetCalendar(string calendarName)
+        public static string GetEventsAsJsonArray()
         {
-            var c = GetCalendarCollection();
-
-            return GetCalendar(calendarName, c);
+            var result = GetEvents();
+            return Json.SerializeArray(result.ToArray());
         }
 
-        public static Calendar GetCalendar(string calendarName, CalendarCollection calendars)
+        public static string GetEventsAsJsonArray(Calendar calendar)
         {
-            foreach(var calendar in calendars)
-            {
-                if (calendar.Name == calendarName)
-                {
-                    return calendar;
-                }
-            }
+            return Json.SerializeArray(GetEvents(calendar).ToArray());
+        }
 
-            var result = AddNewCalendar(calendarName, calendars);
+        public static List<string> GetEvents()
+        {
+            var c = GetCalendar();
+            var result = GetEvents(c);
             return result;
         }
 
-        public static bool SaveCalendars(CalendarCollection collection)
+        public static List<string> GetEvents(Calendar calendar)
         {
-            var t = new CalendarSerializer().SerializeToString(collection);
-            File.WriteAllText(Path, t);
+            var result = new List<string>();
+            foreach(var e in calendar.Events)
+            {
+                result.Add(ReadEventAsJsonObject(e));
+            }
+
+            return result;
+        }
+
+        public static List<string> GetEvents(long calendarId)
+        {
+            var c = GetCalendar();
+            var result = GetEvents(c, calendarId);
+            return result;
+        }
+
+        public static List<string> GetEvents(Calendar calendar, long calendarId)
+        {
+            var result = new List<string>();
+            foreach (var e in calendar.Events)
+            {
+                if (calendarId == -1 || calendarId.ToString() == e.Organizer.CommonName)
+                {
+                    result.Add(ReadEventAsJsonObject(e));
+                }
+            }
+
+            return result;
+        }
+
+        public static bool DeleteEvent(long calendarId, string uid)
+        {
+            var c = GetCalendar();
+            var es = c.Events;
+            for(int i = 0; i < es.Count; i++)
+            {
+                var e = es[i];
+                if (e.Uid == uid && e.Organizer.CommonName == calendarId.ToString())
+                {
+                    c.Events.Remove(e);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool SaveCalendar(Calendar calendar)
+        {
+            var cs = new CalendarSerializer(new SerializationContext());
+            var result = cs.SerializeToString(calendar);
+            File.WriteAllText(Path, result);
             return true;
+        }
+
+        public static bool DeleteCalendar(long calendarId)
+        {
+            return false;
         }
 
         public const string Path = "calendar.ics";

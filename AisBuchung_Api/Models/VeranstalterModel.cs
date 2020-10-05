@@ -24,7 +24,21 @@ namespace AisBuchung_Api.Models
         {
             var command = $"SELECT * FROM Veranstalter INNER JOIN Nutzerdaten ON Veranstalter.Id=Nutzerdaten.Id WHERE Veranstalter.Id={id}";
             var r = DatabaseManager.ExecuteReader(command);
-            return DatabaseManager.ReadFirstAsJsonObject(GetOrganizerKeyTableDictionary(), r, "veranstalter");
+            return DatabaseManager.ReadFirstAsJsonObject(GetOrganizerKeyTableDictionary(), r, null);
+        }
+
+        public string GetOrganizerCalendars(long organizerId)
+        {
+            var reader = DatabaseManager.ExecuteReader($"SELECT * FROM Kalenderberechtigte WHERE Veranstalter={organizerId}");
+            var ids = DatabaseManager.ReadAsJsonArray(new Dictionary<string, string> { { "id", "Kalender" } }, reader);
+            var array = Json.DeserializeArray(ids);
+            var idList = new List<long>();
+            foreach (var a in array)
+            {
+                idList.Add(Convert.ToInt64(Json.GetKvpValue(a, "id", false)));
+            }
+            var result = new KalenderModel().GetCalendars(idList.ToArray());
+            return Json.SerializeObject(new Dictionary<string, string> { { "kalender", result } });
         }
 
         public long PostOrganizer(OrganizerPost organizerPost)
@@ -35,12 +49,13 @@ namespace AisBuchung_Api.Models
                 return -1;
             }
 
-            var result = DatabaseManager.ExecutePost("Veranstalter", organizerPost.ToDictionary());
+            var d = organizerPost.ToDictionary();
+            d.Add("Autorisiert", "0");
+            d.Add("id", id.ToString());
+            
+            var result = DatabaseManager.ExecutePost("Veranstalter", d);
 
-            if (DatabaseManager.CountResults("SELECT * FROM Admins") == 0)
-            {
-                new AdminsModel().PostAdmin(result);
-            }
+            
 
             return result;
         }
@@ -53,7 +68,29 @@ namespace AisBuchung_Api.Models
                 return false;
             }
 
-            return DatabaseManager.ExecutePut("Veranstalter", id, organizerPost.ToDictionary());
+            return new NutzerModel().PutUser(id, organizerPost.ToUserPost());
+        }
+
+        public bool DeleteOrganizer(long id)
+        {
+            return DatabaseManager.ExecuteDelete("Veranstalter", id);
+        }
+
+        public bool AuthorizeOrganizer(long id)
+        {
+            var organizer = GetOrganizer(id);
+            if (organizer == null)
+            {
+                return false;
+            }
+
+            var user = new NutzerModel().GetUser(id);
+            if (Json.GetValue(user, "verifiziert", false) == "0")
+            {
+                return false;
+            }
+
+            return DatabaseManager.ExecutePut("Veranstalter", id, new Dictionary<string, string> { { "autorisiert", "1" } });
         }
 
         public Dictionary<string, string> GetOrganizerKeyTableDictionary()
@@ -65,13 +102,16 @@ namespace AisBuchung_Api.Models
                 {"nachname", "Nachname" },
                 {"email", "Email" },
                 {"abteilung", "Abteilung" },
+                {"verifiziert", "Verifiziert" },
+                {"autorisiert", "Autorisiert" },
             };
         }
 
 
     }
 
-    public class OrganizerPost{
+    public class OrganizerPost : LoginData
+    {
         public string passwort { get; set; }
         public string vorname { get; set; }
         public string nachname { get; set; }

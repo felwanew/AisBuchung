@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30503.244
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AisBuchung_Api", "AisBuchung_Api.csproj", "{FEA9AAF6-C487-46D4-8BE2-18E1599B8229}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FEA9AAF6-C487-46D4-8BE2-18E1599B8229}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEA9AAF6-C487-46D4-8BE2-18E1599B8229}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEA9AAF6-C487-46D4-8BE2-18E1599B8229}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEA9AAF6-C487-46D4-8BE2-18E1599B8229}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E86B7268-0E48-4B22-B02D-64C3B2434973}
+	EndGlobalSection
+EndGlobal
